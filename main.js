@@ -9,7 +9,7 @@ const iconPath = path.join(__dirname, 'src/assets/icon.ico');
 const fs = require('fs');  // Changed from fs.promises to regular fs for sync operations
 const fsPromises = require('fs').promises;  // Keep for async operations
 
-
+// Define isDev IMMEDIATELY after all requires
 const isDev = process.env.NODE_ENV === 'development' || !app.isPackaged;
 const MAIN_WINDOW_VITE_DEV_SERVER_URL = !app.isPackaged ? 'http://localhost:5173' : null;
 
@@ -625,7 +625,7 @@ async function deleteLogFile(filePath) {
 function createWindow() {
   const preloadPath = isDev 
     ? path.join(__dirname, 'preload.js') 
-    : path.join(__dirname, '../.vite/build/preload/preload.js');
+    : path.join(__dirname, '.vite/build/preload/preload.js');
     
   console.log('Preload path:', preloadPath);
   console.log('Preload file exists:', fs.existsSync(preloadPath));
@@ -649,7 +649,7 @@ function createWindow() {
     mainWindow.webContents.openDevTools();
   } else {
     // Correctly points to the production build output
-    mainWindow.loadFile(path.join(__dirname, '../.vite/build/renderer/main_window/index.html'));
+    mainWindow.loadFile(path.join(__dirname, '.vite/build/renderer/main_window/index.html'));
   }
 
   // Auto-connect after window is ready
@@ -1737,25 +1737,10 @@ ipcMain.handle("get-update-progress", () => {
 // -------------------------
 // App lifecycle - FIXED
 // -------------------------
-autoUpdater.on('update-available', () => {
-  mainWindow.webContents.send('update_available');
-});
-autoUpdater.on('update-downloaded', () => {
-  mainWindow.webContents.send('update_ready');
-});
-ipcMain.on('restart_app', () => {
-  autoUpdater.quitAndInstall();
-});
-
-
 app.whenReady().then(() => {
   createWindow();
   // DON'T call connectModbus() here - it's called via autoConnectPort()
-  //Check update after app opens
-  setTimeout(()=> {
-    autoUpdater.checkForUpdatesAndNotify();
-  },);
-});3000;
+});
 
 // Close port when app quits
 app.on('window-all-closed', () => {
