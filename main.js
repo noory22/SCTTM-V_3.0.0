@@ -38,46 +38,40 @@ if (!isDev) {
   autoUpdater.on('update-available', (info) => {
     console.log('Update available:', info);
     if (mainWindow && !mainWindow.isDestroyed()) {
-      mainWindow.webContents.send('update-status', `Update available: v${info.version}`);
+      mainWindow.webContents.send('update-status', 'Update available');
+      mainWindow.webContents.send('update-available', info);
       
-      dialog.showMessageBox(mainWindow, {
-        type: 'info',
-        title: 'Update Available',
-        message: `A new version ${info.version} is available. Do you want to download it now?`,
-        buttons: ['Yes', 'No'],
-        defaultId: 0,
-        cancelId: 1
-      }).then((result) => {
-        if (result.response === 0) {
-          autoUpdater.downloadUpdate();
-        }
-      });
+      // Optional: Show a system dialog as fallback
+      // dialog.showMessageBox(mainWindow, {
+      //   type: 'info',
+      //   title: 'Update Available',
+      //   message: `A new version ${info.version} is available.`,
+      //   buttons: ['Download Now', 'Later'],
+      //   defaultId: 0
+      // }).then((result) => {
+      //   if (result.response === 0) {
+      //     autoUpdater.downloadUpdate();
+      //   }
+      // });
     }
   });
 
   autoUpdater.on('update-not-available', () => {
     console.log('No updates available');
     if (mainWindow && !mainWindow.isDestroyed()) {
-      mainWindow.webContents.send('update-status', 'No updates available');
-      dialog.showMessageBox(mainWindow, {
-        type: 'info',
-        title: 'No Updates',
-        message: 'You are running the latest version.',
-        buttons: ['OK']
-      });
+      mainWindow.webContents.send('update-status', 'latest');
     }
   });
 
   autoUpdater.on('error', (err) => {
     console.error('Update error:', err);
     if (mainWindow && !mainWindow.isDestroyed()) {
-      mainWindow.webContents.send('update-status', `Update error: ${err.message}`);
+      mainWindow.webContents.send('update-status', `Error: ${err.message}`);
     }
   });
 
   autoUpdater.on('download-progress', (progressObj) => {
-    let logMessage = `Downloaded ${progressObj.percent.toFixed(2)}%`;
-    console.log(logMessage);
+    console.log(`Download progress: ${progressObj.percent}%`);
     if (mainWindow && !mainWindow.isDestroyed()) {
       mainWindow.webContents.send('update-progress', progressObj);
     }
@@ -86,19 +80,20 @@ if (!isDev) {
   autoUpdater.on('update-downloaded', (info) => {
     console.log('Update downloaded:', info);
     if (mainWindow && !mainWindow.isDestroyed()) {
-      mainWindow.webContents.send('update-status', 'Update downloaded. Ready to install.');
+      mainWindow.webContents.send('update-status', 'downloaded');
       
-      dialog.showMessageBox(mainWindow, {
-        type: 'info',
-        title: 'Update Ready',
-        message: `Version ${info.version} has been downloaded. The application will restart to install the update.`,
-        buttons: ['Restart Now'],
-        defaultId: 0
-      }).then(() => {
-        setImmediate(() => {
-          autoUpdater.quitAndInstall();
-        });
-      });
+      // Optional: Show a system dialog as fallback
+      // dialog.showMessageBox(mainWindow, {
+      //   type: 'info',
+      //   title: 'Update Ready',
+      //   message: `Version ${info.version} has been downloaded. Restart now to apply?`,
+      //   buttons: ['Restart Now', 'Later'],
+      //   defaultId: 0
+      // }).then((result) => {
+      //   if (result.response === 0) {
+      //     autoUpdater.quitAndInstall();
+      //   }
+      // });
     }
   });
 }
@@ -1721,16 +1716,23 @@ ipcMain.handle("check-for-updates", async () => {
   }
   try {
     autoUpdater.checkForUpdates();
-    return { success: true, message: "Checking for updates..." };
+    return { success: true };
   } catch (error) {
-    console.error("Update check error:", error);
     return { success: false, error: error.message };
   }
 });
 
-// Add handler for update progress
-ipcMain.handle("get-update-progress", () => {
-  return { success: true };
+ipcMain.handle("download-update", async () => {
+  try {
+    autoUpdater.downloadUpdate();
+    return { success: true };
+  } catch (error) {
+    return { success: false, error: error.message };
+  }
+});
+
+ipcMain.handle("quit-and-install", () => {
+  autoUpdater.quitAndInstall();
 });
 
 
@@ -1739,7 +1741,13 @@ ipcMain.handle("get-update-progress", () => {
 // -------------------------
 app.whenReady().then(() => {
   createWindow();
-  // DON'T call connectModbus() here - it's called via autoConnectPort()
+  
+  // Check for updates on startup (with a small delay to ensure window is ready)
+  if (!isDev) {
+    setTimeout(() => {
+      autoUpdater.checkForUpdatesAndNotify();
+    }, 5000);
+  }
 });
 
 // Close port when app quits

@@ -1,6 +1,6 @@
 {
   "name": "scttm",
-  "version": "2.0.0",
+  "version": "3.0.0",
   "description": "Specialized Catheter Trackability Testing Machine",
   "main": "main.js",
   "author": {
@@ -135,7 +135,7 @@
     "publish": {
       "provider": "github",
       "owner": "noory22",
-      "repo": "SCTTM-V_2.0.0",
+      "repo": "SCTTM-V_3.0.0",
       "private": false,
       "releaseType": "release"
     }

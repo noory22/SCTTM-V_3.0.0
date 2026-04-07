@@ -9,6 +9,7 @@ import HandleConfig from "./HandleConfig.jsx";
 import Manual from "./Manual.jsx";
 import ProcessLogs from "./ProcessLogs.jsx";
 import ProcessMode from "./ProcessMode.jsx"; // add this import
+import UpdateChecker from "./UpdateChecker.jsx";
 
 // Check if serialAPI is available
 console.log('Renderer loaded, serialAPI available:', !!window.serialAPI);
@@ -29,6 +30,7 @@ root.render(
         <Route path="/process-logs" element={<ProcessLogs />} />
         <Route path="/process-mode" element={<ProcessMode />} />
       </Routes>
+      <UpdateChecker />
     </HashRouter>
   </React.StrictMode>
 );
