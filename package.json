@@ -1,6 +1,6 @@
 {
   "name": "scttm",
-  "version": "3.0.0",
+  "version": "3.0.3",
   "description": "Specialized Catheter Trackability Testing Machine",
   "main": "main.js",
   "author": {
