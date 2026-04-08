@@ -94,6 +94,7 @@
         }
       ],
       "icon": "src/assets/icon.ico",
+      "artifactName": "${productName}-Setup-${version}.${ext}",
       "verifyUpdateCodeSignature": false,
       "signAndEditExecutable": false
     },
@@ -106,6 +107,7 @@
     "nsis": {
       "oneClick": false,
       "allowToChangeInstallationDirectory": true,
+      "artifactName": "${productName}-Setup-${version}.${ext}",
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
       "shortcutName": "SCTTM",
